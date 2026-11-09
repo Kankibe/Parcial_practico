@@ -19,25 +19,6 @@ Aplicación de escritorio en C# con Windows Forms que implementa el patrón de d
 | **Fecha** | 9 de noviembre de 2026 |
 ---
 
-## Tabla de contenido
-
-1. [Objetivos](#objetivos)
-2. [Introducción](#introducción)
-3. [Tecnologías y versiones](#tecnologías-y-versiones)
-4. [Arquitectura del proyecto](#arquitectura-del-proyecto)
-5. [Patrón MVP](#patrón-mvp)
-6. [Seguridad: hash y verificación de contraseñas](#seguridad-hash-y-verificación-de-contraseñas)
-7. [Base de datos y conexión con privilegios mínimos](#base-de-datos-y-conexión-con-privilegios-mínimos)
-8. [Resultados: ventana principal MDI](#resultados-ventana-principal-mdi)
-9. [Resultados: juego de Craps](#resultados-juego-de-craps)
-10. [Módulo de productos (CRUD)](#módulo-de-productos-crud)
-11. [Resultados: validaciones](#resultados-validaciones)
-12. [Controles utilizados](#controles-utilizados)
-13. [Guía de instalación y ejecución](#guía-de-instalación-y-ejecución)
-14. [Documentación del código](#documentación-del-código)
-15. [Información del estudiante](#información-del-estudiante)
-
----
 
 ## Objetivos
 
