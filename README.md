@@ -311,13 +311,6 @@ Si algún campo falla, el Presentador le ordena a la Vista mostrar un icono de e
    - Los seis procedimientos almacenados (`sp_obtener_usuario`, `sp_insertar_usuario`, `sp_listar_productos`, `sp_insertar_producto`, `sp_actualizar_producto` y `sp_eliminar_producto`).
    - El usuario `app_lab` con privilegios mínimos (solo ejecutar procedimientos).
 3. **Revisar la conexión:** abrir `Datos/Conexion.cs` y comprobar que el servidor, el puerto, el usuario y la contraseña coincidan con los del script:
-   ```csharp
-   private const string Servidor = "localhost";
-   private const string Puerto = "3306";
-   private const string BaseDatos = "lab_mvp";
-   private const string Usuario = "app_lab";
-   private const string Clave = "Lab_2026*";
-   ```
 4. **Abrir la solución:** abrir `LabMVP.slnx` en Visual Studio y esperar a que se restauren los paquetes NuGet.
 5. **Marcar el proyecto de inicio:** clic derecho sobre el proyecto `Presentacion`, **Establecer como proyecto de inicio**.
 6. **Ejecutar:** presionar `F5` o el botón **Iniciar**.
