@@ -8,7 +8,7 @@
 
 # Lab MVP - Parcial Práctico
 
-Aplicación de escritorio en C# con Windows Forms que implementa el patrón de diseño **MVP (Modelo - Vista - Presentador)** sobre una arquitectura en capas. Incluye inicio de sesión con contraseñas protegidas mediante hash, una ventana principal MDI con menú lateral, un juego de Craps y un módulo CRUD de productos con manejo de imágenes.
+Aplicación de escritorio en C# con Windows Forms que implementa el patrón de diseño **MVP (Modelo - Vista - Presentador)** sobre una arquitectura en capas. Incluye inicio de sesión con contraseñas protegidas mediante hash, **roles de usuario** (lector, editor y administrador), una ventana principal MDI con menú lateral, un juego de Craps, un módulo CRUD de productos con manejo de imágenes y una ventana de gestión de usuarios. La base de datos se usa con **dos cuentas de MySQL**: un superusuario (`Kanki`) y un usuario de privilegios mínimos (`Ibe`).
 
 | | |
 | :--- | :--- |
@@ -16,7 +16,7 @@ Aplicación de escritorio en C# con Windows Forms que implementa el patrón de d
 | **Grupo** | 1IL133 |
 | **Instructora** | Ing. Irina Fong |
 | **Estudiante** | Kankibe González |
-| **Fecha** | 9 de noviembre de 2026 |
+| **Fecha** | 23 de noviembre de 2026 |
 ---
 
 
@@ -24,7 +24,7 @@ Aplicación de escritorio en C# con Windows Forms que implementa el patrón de d
 
 - Implementar el patrón de diseño **MVP** separando la interfaz (Vista), la lógica de presentación (Presentador) y la lógica de negocio y datos (Modelo).
 - Crear **dos contratos independientes** (interfaces) en la capa de Negocio: uno para generar el hash de una contraseña y otro para verificarla.
-- Establecer una **conexión específica a la base de datos con privilegios mínimos**, de modo que la aplicación no use el usuario administrador (`root`).
+- Establecer una **conexión a la base de datos con privilegios mínimos** (usuario `Ibe`), de modo que la aplicación no use el usuario administrador (`root`), y un **superusuario** (`Kanki`) que solo se usa cuando entra un administrador.
 - Construir una ventana principal **MDI con menú lateral izquierdo**, que muestre la hora actual y, en la parte inferior, el usuario que inició sesión.
 - Validar los datos del usuario antes de enviarlos a la base de datos.
 
@@ -32,9 +32,9 @@ Aplicación de escritorio en C# con Windows Forms que implementa el patrón de d
 
 El proyecto parte de un inicio de sesión (login) con registro de usuarios. Las contraseñas nunca se guardan en texto plano: se almacena un **salt** aleatorio por usuario y el **hash SHA-256** de la combinación `salt + contraseña`. Al iniciar sesión, la capa de Negocio vuelve a calcular el hash con el salt guardado y lo compara con el almacenado.
 
-Una vez dentro, el usuario accede a una ventana principal MDI con un menú lateral desde el cual puede abrir el **juego de Craps**, el **módulo de productos**, organizar las ventanas abiertas (cascada o mosaico) y cerrar la sesión. El menú muestra un reloj en tiempo real y, abajo, el nombre y el correo del usuario con la sesión activa.
+Una vez dentro, el usuario accede a una ventana principal MDI con un menú lateral desde el cual puede abrir el **juego de Craps**, el **módulo de productos**, la **gestión de usuarios** (solo el administrador), organizar las ventanas abiertas (cascada o mosaico) y cerrar la sesión. El menú muestra un reloj en tiempo real y, abajo, el nombre, el rol, la cuenta de MySQL en uso y el correo del usuario con la sesión activa.
 
-Toda la comunicación con la base de datos se hace mediante **procedimientos almacenados**, y el usuario de la aplicación solo tiene permiso para ejecutarlos; no puede leer ni modificar las tablas directamente.
+Toda la comunicación con la base de datos se hace mediante **procedimientos almacenados**. La cuenta de privilegios mínimos solo tiene permiso para ejecutar unos pocos de ellos; no puede leer ni modificar las tablas directamente.
 
 ## Tecnologías y versiones
 
@@ -58,10 +58,11 @@ La solución `LabMVP` está dividida en cuatro proyectos (capas):
 LabMVP/
 ├── Entidades/                    Clases que representan los datos
 │   ├── E_Usuario.cs
-│   └── E_Producto.cs
+│   ├── E_Producto.cs
+│   └── Roles.cs                  Los tres roles: lector, editor y admin
 │
 ├── Datos/                        Acceso a MySQL (solo procedimientos almacenados)
-│   ├── Conexion.cs               Conexión con el usuario de privilegios mínimos
+│   ├── Conexion.cs               Conexión con Ibe (mínimos) o Kanki (superusuario)
 │   ├── D_Usuario.cs
 │   └── D_Producto.cs
 │
@@ -70,33 +71,36 @@ LabMVP/
 │   │   ├── IHashService.cs               Contrato 1: generar el hash
 │   │   └── IVerificarHashService.cs      Contrato 2: verificar el hash
 │   ├── Servicios/
-│   │   ├── HashService.cs                
+│   │   ├── HashService.cs
 │   │   └── VerificarHashService.cs
 │   ├── Validaciones/
 │   │   ├── IValidadorCampo.cs
 │   │   └── Validadores.cs                ValidadorTexto / Decimal / Entero
-│   ├── N_Usuario.cs              Login y registro
+│   ├── N_Usuario.cs              Login, registro y gestión de usuarios
 │   ├── N_Producto.cs             CRUD y validaciones de productos
 │   ├── N_Craps.cs                Reglas del juego de Craps
 │   ├── ErroresProducto.cs
-│   └── Sesion.cs                 Usuario que inició sesión
+│   └── Sesion.cs                 Usuario que inició sesión y cuenta de MySQL en uso
 │
 └── Presentacion/                 Windows Forms (MVP)
     ├── Interfaces/               Contratos de cada Vista
     │   ├── ILoginView.cs
     │   ├── IPrincipalView.cs
     │   ├── ICrapsView.cs
-    │   └── IProductosView.cs
+    │   ├── IProductosView.cs
+    │   └── IUsuariosView.cs
     ├── Presentadores/            Un presentador por cada Vista
     │   ├── LoginPresenter.cs
     │   ├── PrincipalPresenter.cs
     │   ├── CrapsPresenter.cs
-    │   └── ProductosPresenter.cs
+    │   ├── ProductosPresenter.cs
+    │   └── UsuariosPresenter.cs
     ├── Vistas/                   Formularios (solo controles)
     │   ├── FrmLogin.cs
     │   ├── FrmPrincipal.cs       Contenedor MDI
     │   ├── FrmCraps.cs
-    │   └── FrmProductos.cs
+    │   ├── FrmProductos.cs
+    │   └── FrmUsuarios.cs        Gestión de usuarios (solo admin)
     ├── ImagenHelper.cs           Imagen <-> bytes
     └── Program.cs
 ```
@@ -167,6 +171,7 @@ Ventajas de este diseño:
 | `password_hash` | `CHAR(64)` | NO | | Hash SHA-256 en hexadecimal |
 | `activo` | `TINYINT(1)` | NO | | 1 = activo, 0 = deshabilitado |
 | `fecha_creacion` | `DATETIME` | NO | | Fecha de registro |
+| `rol` | `VARCHAR(20)` | NO | | `lector` (por defecto), `editor` o `admin` (con `CHECK`) |
 
 **Tabla `productos`**
 
@@ -180,30 +185,98 @@ Ventajas de este diseño:
 
 ### Procedimientos almacenados
 
-| Procedimiento | Uso |
-| :--- | :--- |
-| `sp_obtener_usuario(p_correo)` | Devuelve el usuario activo con ese correo (la app compara el hash en C#). |
-| `sp_insertar_usuario(...)` | Registra un usuario nuevo con su salt y hash. |
-| `sp_listar_productos(p_filtro)` | Lista los productos; con filtro busca en id, nombre, precio y cantidad. |
-| `sp_insertar_producto(...)` | Guarda un producto nuevo. |
-| `sp_actualizar_producto(...)` | Actualiza un producto existente. |
-| `sp_eliminar_producto(p_id)` | Borra un producto. |
+| Procedimiento | Uso | Ibe | Kanki |
+| :--- | :--- | :---: | :---: |
+| `sp_obtener_usuario(p_correo)` | Devuelve el usuario con ese correo (la app compara el hash en C#). | Sí | Sí |
+| `sp_insertar_usuario(...)` | Registra un usuario nuevo con su salt y hash (rol `lector`). | Sí | Sí |
+| `sp_listar_productos(p_filtro)` | Lista los productos; con filtro busca en id, nombre, precio y cantidad. | Sí | Sí |
+| `sp_insertar_producto(...)` | Guarda un producto nuevo. | Sí | Sí |
+| `sp_actualizar_producto(...)` | Actualiza un producto existente. | Sí | Sí |
+| `sp_eliminar_producto(p_id)` | Borra un producto. | No | Sí |
+| `sp_insertar_usuario_con_rol(...)` | Crea un usuario con el rol que elige el admin. | No | Sí |
+| `sp_listar_usuarios()` | Lista los usuarios para la ventana de gestión. | No | Sí |
+| `sp_cambiar_rol_usuario(p_id, p_rol)` | Cambia el rol de un usuario. | No | Sí |
+| `sp_cambiar_estado_usuario(p_id, p_activo)` | Activa o desactiva una cuenta. | No | Sí |
 
-### Usuario de la aplicación (privilegios mínimos)
+Los procedimientos que cambian el rol o el estado también protegen los datos desde la base: nunca permiten dejar el sistema sin al menos **un administrador activo**.
 
-La aplicación **no usa `root`**. Se conecta con un usuario propio, `app_lab`, que solo puede ejecutar los procedimientos almacenados de la base `lab_mvp`:
+### Usuarios de MySQL: Kanki e Ibe
+
+La aplicación **no usa `root`**. Se crearon dos cuentas de MySQL con permisos muy distintos:
+
+| Cuenta | Permisos | Para qué se usa |
+| :--- | :--- | :--- |
+| `Kanki` | `ALL PRIVILEGES` sobre todo el servidor (superusuario) | Administrar la base y atender a los usuarios con rol `admin` |
+| `Ibe` | Solo `EXECUTE` sobre 5 procedimientos de `lab_mvp` (privilegios mínimos) | Login, registro y todos los usuarios que no son admin |
 
 ```sql
-CREATE USER 'app_lab'@'localhost' IDENTIFIED BY 'Lab_2026*';
-GRANT EXECUTE ON lab_mvp.* TO 'app_lab'@'localhost';
+-- Kanki: superusuario
+CREATE USER IF NOT EXISTS 'Kanki'@'localhost' IDENTIFIED BY 'Kanki_2026*';
+GRANT ALL PRIVILEGES ON *.* TO 'Kanki'@'localhost' WITH GRANT OPTION;
+
+-- Ibe: privilegios minimos (solo ejecutar procedimientos)
+CREATE USER IF NOT EXISTS 'Ibe'@'localhost' IDENTIFIED BY 'Ibe_2026*';
+GRANT EXECUTE ON PROCEDURE lab_mvp.sp_obtener_usuario TO 'Ibe'@'localhost';
+GRANT EXECUTE ON PROCEDURE lab_mvp.sp_insertar_usuario TO 'Ibe'@'localhost';
+GRANT EXECUTE ON PROCEDURE lab_mvp.sp_listar_productos TO 'Ibe'@'localhost';
+GRANT EXECUTE ON PROCEDURE lab_mvp.sp_insertar_producto TO 'Ibe'@'localhost';
+GRANT EXECUTE ON PROCEDURE lab_mvp.sp_actualizar_producto TO 'Ibe'@'localhost';
 ```
 
-La conexión está centralizada en `Datos/Conexion.cs`, que construye la cadena con ese usuario. Con este esquema, si la aplicación fuera comprometida, el atacante no podría leer ni modificar las tablas directamente. Se puede comprobar con una conexión de `app_lab`:
+**Cómo elige la aplicación la cuenta.** La conexión está centralizada en `Datos/Conexion.cs`:
+
+1. El login y el registro siempre arrancan con `Ibe`.
+2. Cuando el usuario inicia sesión correctamente, `N_Usuario` mira su rol: si es `admin`, la aplicación cambia a `Kanki`; si es `editor` o `lector`, sigue con `Ibe`.
+3. Al cerrar sesión, la conexión vuelve a `Ibe`.
+
+El menú lateral muestra la cuenta en uso (por ejemplo `BD: Kanki | kanki@lab.com`), para comprobarlo a simple vista.
+
+**Dónde ver las cuentas en MySQL.** Las cuentas de MySQL no están dentro de `lab_mvp`, sino en la base del sistema `mysql`. En Workbench se ven en el menú **Server, Users and Privileges**, o con:
 
 ```sql
-CALL lab_mvp.sp_obtener_usuario('admin@lab.com');   -- funciona
-SELECT * FROM lab_mvp.usuarios;                     -- error: permiso denegado
+SELECT user, host FROM mysql.user WHERE user IN ('Kanki', 'Ibe');
+SHOW GRANTS FOR 'Ibe'@'localhost';
+SHOW GRANTS FOR 'Kanki'@'localhost';
 ```
+
+**Comprobación del privilegio mínimo** (conectado como `Ibe` en Workbench):
+
+```sql
+CALL lab_mvp.sp_listar_productos('');   -- funciona
+SELECT * FROM lab_mvp.usuarios;         -- error: SELECT command denied
+CALL lab_mvp.sp_eliminar_producto(1);   -- error: EXECUTE command denied
+```
+
+Gracias a este esquema, si la aplicación fuera comprometida, el atacante con la cuenta `Ibe` no podría leer ni modificar las tablas directamente, ni borrar productos, ni gestionar usuarios. Además, todos los datos viajan como **parámetros** de los procedimientos y nunca se arman consultas concatenando texto, lo que evita la inyección SQL; el privilegio mínimo reduce el daño en caso de que algo fallara.
+
+> **Nota:** las contraseñas de `Kanki` e `Ibe` que aparecen en `Conexion.cs` y en el script son **credenciales de prueba** para este laboratorio. Solo funcionan en el MySQL local (las cuentas están creadas con host `localhost`).
+
+## Roles de la aplicación
+
+Hay **dos niveles de permisos** que no se deben confundir:
+
+- **Nivel base de datos:** las cuentas de MySQL `Kanki` e `Ibe` (sección anterior). Deciden qué puede ejecutar la aplicación en el servidor.
+- **Nivel aplicación:** el rol del usuario que inicia sesión (columna `rol` de la tabla `usuarios`). Decide qué botones y acciones puede usar cada persona dentro del programa.
+
+Los usuarios de la tabla `usuarios` **no son cuentas de MySQL**: son datos de la aplicación. Todos se conectan a MySQL mediante `Ibe`, excepto los administradores, que usan `Kanki`.
+
+| Acción | Lector | Editor | Admin |
+| :--- | :---: | :---: | :---: |
+| Ver y buscar productos | Sí | Sí | Sí |
+| Jugar Craps | Sí | Sí | Sí |
+| Crear y modificar productos | No | Sí | Sí |
+| Borrar productos | No | No | Sí |
+| Gestionar usuarios (botón **Usuarios y roles**) | No | No | Sí |
+| Cuenta de MySQL que usa | `Ibe` | `Ibe` | `Kanki` |
+
+Reglas de la gestión de usuarios:
+
+- Quien se registra desde el login queda siempre con el rol **lector**. Solo el admin puede darle otro rol.
+- El admin puede crear usuarios con el rol que elija, cambiar el rol de un usuario y activar o desactivar cuentas.
+- Una cuenta desactivada se conserva en la base de datos, pero ya no puede iniciar sesión.
+- El cambio de rol se aplica la próxima vez que esa persona inicie sesión.
+- El admin no puede cambiarse el rol ni desactivarse a sí mismo, y siempre debe quedar al menos un administrador activo.
+- Aunque un botón estuviera visible, el Negocio vuelve a comprobar el rol antes de crear, modificar o borrar, y MySQL limita lo que cada cuenta puede ejecutar.
 
 ## Resultados: ventana principal MDI
 
@@ -212,9 +285,10 @@ La ventana principal es un contenedor **MDI**. Tiene un **menú lateral izquierd
 - El nombre de la aplicación y un **reloj en tiempo real** (hora y fecha en español).
 - Botón **Juego de Craps**: abre el juego dentro del MDI.
 - Botón **Productos**: abre el CRUD de productos dentro del MDI (si ya está abierto, lo trae al frente).
+- Botón **Usuarios y roles**: abre la gestión de usuarios. **Solo lo ve el administrador.**
 - Botón **Organizar ventanas**: alterna entre cascada y mosaico.
 - Botón **Cerrar sesión**: borra la sesión y vuelve al login.
-- En la **parte inferior**, el usuario que inició sesión (nombre y correo).
+- En la **parte inferior**, el usuario que inició sesión: nombre con su rol, la cuenta de MySQL en uso y el correo.
 
 **Captura 1 - Inicio de sesión (login)**
 
@@ -233,18 +307,25 @@ La ventana principal es un contenedor **MDI**. Tiene un **menú lateral izquierd
 
 ## Módulo de productos (CRUD)
 
-Módulo integrado al MVP que permite **crear, leer, actualizar y borrar** productos con su nombre, precio, cantidad e imagen.
+Módulo integrado al MVP que permite **crear, leer, actualizar y borrar** productos con su nombre, precio, cantidad e imagen. Las acciones disponibles dependen del rol del usuario (ver la tabla de roles).
 
-- **Guardar:** valida los campos y registra el producto nuevo.
+- **Guardar:** valida los campos y registra el producto nuevo (editor y admin).
 - **Listar y buscar:** el grid muestra todos los productos; al escribir en el campo de búsqueda (o pulsar la lupa) se filtra por id, nombre, precio o cantidad.
 - **Seleccionar:** al elegir una fila, sus datos pasan a los campos del formulario para editarlos.
-- **Modificar:** actualiza el producto seleccionado.
-- **Borrar:** pide confirmación y elimina el producto seleccionado.
+- **Modificar:** actualiza el producto seleccionado (editor y admin).
+- **Borrar:** pide confirmación y elimina el producto seleccionado (solo admin).
 - **Limpiar:** vacía el formulario y vuelve al modo de creación.
 - **Imágenes:** al hacer clic en el cuadro de imagen se abre un selector de archivos (jpg, png, bmp). La clase `ImagenHelper` convierte la imagen a `byte[]` (PNG) para guardarla en la columna `LONGBLOB` y la reconstruye al leerla. En el grid se muestran miniaturas de 80 x 60 píxeles. Si el producto no tiene foto, se guarda sin imagen.
 
 Los eventos de los botones los recibe el `ProductosPresenter`, que usa a `N_Producto` para validar y guardar, y le ordena a `FrmProductos` qué mostrar.
 
+## Gestión de usuarios (solo administrador)
+
+La ventana **Usuarios y roles** (`FrmUsuarios`, con su `UsuariosPresenter` y su contrato `IUsuariosView`) sigue el mismo patrón MVP. Muestra en un grid el nombre, el correo, el rol y el estado de cada usuario, y permite:
+
+- **Cambiar el rol** de un usuario con un `ComboBox` y el botón **Guardar rol**.
+- **Activar o desactivar** la cuenta elegida.
+- **Crear un usuario nuevo** con nombre, correo, contraseña y rol (la contraseña se guarda con salt y hash, igual que en el registro).
 
 ### Login y registro (`N_Usuario`)
 
@@ -252,6 +333,7 @@ Los eventos de los botones los recibe el `ProductosPresenter`, que usa a `N_Prod
 - La contraseña no puede estar vacía; para registrarse debe tener **al menos 6 caracteres**.
 - El nombre es obligatorio al registrarse.
 - No se permiten dos usuarios con el mismo correo.
+- Una cuenta desactivada por el admin no puede iniciar sesión.
 - Si el correo o la contraseña son incorrectos se muestra el mismo mensaje: "Correo o contraseña incorrectos."
 
 ### Productos (`N_Producto`)
@@ -280,11 +362,13 @@ Si algún campo falla, el Presentador le ordena a la Vista mostrar un icono de e
 | :--- | :--- |
 | `Form` (con `IsMdiContainer = true`) | `FrmPrincipal`, contenedor MDI de las demás ventanas |
 | `Panel` | Menú lateral, zona de usuario en la parte inferior y panel de búsqueda |
+| `GroupBox` | Formulario "Crear usuario nuevo" en la gestión de usuarios |
 | `Label` | Textos, reloj, fecha, usuario, dados, marcador y mensajes |
-| `Button` | Ingresar, Registrarme, menú lateral, Tirar dados, Nuevo juego, Guardar, Modificar, Limpiar y Borrar |
+| `Button` | Ingresar, Registrarme, menú lateral, Tirar dados, Nuevo juego, Guardar, Modificar, Limpiar, Borrar, Guardar rol y Crear usuario |
 | `TextBox` | Correo, contraseña, nombre, id, precio, cantidad y búsqueda |
+| `ComboBox` | Elegir el rol de un usuario existente y el rol de un usuario nuevo |
 | `Timer` | Actualiza el reloj del menú lateral cada segundo |
-| `DataGridView` (con columnas de texto e imagen) | Lista de productos con miniaturas |
+| `DataGridView` (con columnas de texto e imagen) | Lista de productos con miniaturas y lista de usuarios |
 | `PictureBox` | Imagen del producto y lupa de búsqueda |
 | `ImageList` | Íconos de los botones del CRUD |
 | `ErrorProvider` | Iconos de error de las validaciones |
@@ -305,24 +389,27 @@ Si algún campo falla, el Presentador le ordena a la Vista mostrar un icono de e
    ```bash
    git clone https://github.com/Kankibe/Parcial_practico.git
    ```
-2. **Crear la base de datos:** abrir **MySQL Workbench**, conectarse con un usuario administrador (`root`) y ejecutar el archivo `Parcial_Practico.sql` (menú **File**, **Open SQL Script**, y luego el botón del rayo para ejecutarlo). Este único script, exportado con *Dump Structure and Data*, crea:
+2. **Crear la base de datos:** abrir **MySQL Workbench**, conectarse con un usuario administrador (`root`) y ejecutar el archivo `Parcial_Practico.sql` (menú **File**, **Open SQL Script**, y luego el botón del rayo para ejecutarlo). Hay que usar `root` porque el script crea usuarios y asigna permisos. Este único script, exportado con *Dump Structure and Data*, crea:
    - La base de datos `lab_mvp`.
    - Las tablas `usuarios` y `productos`, con datos de ejemplo.
-   - Los seis procedimientos almacenados (`sp_obtener_usuario`, `sp_insertar_usuario`, `sp_listar_productos`, `sp_insertar_producto`, `sp_actualizar_producto` y `sp_eliminar_producto`).
-   - El usuario `app_lab` con privilegios mínimos (solo ejecutar procedimientos).
-3. **Revisar la conexión:** abrir `Datos/Conexion.cs` y comprobar que el servidor, el puerto, el usuario y la contraseña coincidan con los del script:
+   - Los diez procedimientos almacenados (`sp_obtener_usuario`, `sp_insertar_usuario`, `sp_insertar_usuario_con_rol`, `sp_listar_usuarios`, `sp_cambiar_rol_usuario`, `sp_cambiar_estado_usuario`, `sp_listar_productos`, `sp_insertar_producto`, `sp_actualizar_producto` y `sp_eliminar_producto`).
+   - Las cuentas de MySQL `Kanki` (superusuario) e `Ibe` (privilegios mínimos).
+3. **Revisar la conexión:** abrir `Datos/Conexion.cs` y comprobar que el servidor, el puerto, el usuario y la contraseña de `Ibe` y `Kanki` coincidan con los del script.
 4. **Abrir la solución:** abrir `LabMVP.slnx` en Visual Studio y esperar a que se restauren los paquetes NuGet.
 5. **Marcar el proyecto de inicio:** clic derecho sobre el proyecto `Presentacion`, **Establecer como proyecto de inicio**.
 6. **Ejecutar:** presionar `F5` o el botón **Iniciar**.
 
-### Usuario de prueba
+### Usuarios de prueba
 
-| Campo | Valor |
-| :--- | :--- |
-| Correo | `admin@lab.com` |
-| Contraseña | `Admin123*` |
+Son las cuentas de la aplicación (se escriben en el login):
 
-También se pueden crear más usuarios desde la misma pantalla de login con el botón **Registrarme**.
+| Correo | Contraseña | Rol | Cuenta de MySQL que usa |
+| :--- | :--- | :--- | :--- |
+| `admin@lab.com` | `Admin123*` | admin | `Kanki` |
+| `kanki@lab.com` | `Kanki_2026*` | admin | `Kanki` |
+| `ibe@lab.com` | `Ibe_2026*` | lector | `Ibe` |
+| `usuario@lab.com` | `Usuario123*` | lector | `Ibe` |
+
 
 ## Documentación del código
 
@@ -337,4 +424,4 @@ También se pueden crear más usuarios desde la misma pantalla de login con el b
 
 **Instructora:** Ing. Irina Fong
 
-**Fecha:** 9 de noviembre de 2026
+**Fecha:** 23 de noviembre de 2026
