@@ -6,6 +6,7 @@ using Entidades;
 namespace Datos
 {
     // Acceso a datos de los productos.
+    // el usuario app_lab no puede tocar la tabla directamente.
     public class D_Producto
     {
         private Conexion conexion = new Conexion();
@@ -48,7 +49,7 @@ namespace Datos
             return lista;
         }
 
-        // Guarda un producto nuevo 
+        // Guarda un producto nuevo con sp_insertar_producto.
         public void Insertar(E_Producto producto)
         {
             using (MySqlConnection con = conexion.ObtenerConexion())
@@ -68,7 +69,7 @@ namespace Datos
             }
         }
 
-        // Actualiza un producto existente 
+        // Actualiza un producto existente con sp_actualizar_producto.
         public void Actualizar(E_Producto producto)
         {
             using (MySqlConnection con = conexion.ObtenerConexion())
@@ -89,7 +90,8 @@ namespace Datos
             }
         }
 
-        // Borra un producto
+        // Borra un producto con sp_eliminar_producto.
+        // Devuelve true si existía y se borró, false si ya no estaba.
         public bool Eliminar(int id)
         {
             using (MySqlConnection con = conexion.ObtenerConexion())
