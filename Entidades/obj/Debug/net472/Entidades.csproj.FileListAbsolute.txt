@@ -1,0 +1,9 @@
+C:\Users\gonza\Downloads\LabMVP_roles\LabMVP\Entidades\bin\Debug\net472\Entidades.dll
+C:\Users\gonza\Downloads\LabMVP_roles\LabMVP\Entidades\bin\Debug\net472\Entidades.pdb
+C:\Users\gonza\Downloads\LabMVP_roles\LabMVP\Entidades\obj\Debug\net472\Entidades.csproj.AssemblyReference.cache
+C:\Users\gonza\Downloads\LabMVP_roles\LabMVP\Entidades\obj\Debug\net472\Entidades.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\gonza\Downloads\LabMVP_roles\LabMVP\Entidades\obj\Debug\net472\Entidades.AssemblyInfoInputs.cache
+C:\Users\gonza\Downloads\LabMVP_roles\LabMVP\Entidades\obj\Debug\net472\Entidades.AssemblyInfo.cs
+C:\Users\gonza\Downloads\LabMVP_roles\LabMVP\Entidades\obj\Debug\net472\Entidades.csproj.CoreCompileInputs.cache
+C:\Users\gonza\Downloads\LabMVP_roles\LabMVP\Entidades\obj\Debug\net472\Entidades.dll
+C:\Users\gonza\Downloads\LabMVP_roles\LabMVP\Entidades\obj\Debug\net472\Entidades.pdb
