@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using Datos;
@@ -22,14 +23,15 @@ namespace Negocio
             verificarService = new VerificarHashService(hashService);
         }
 
-        // Constructor para pruebas
+     
         public N_Usuario(IHashService hashService, IVerificarHashService verificarService)
         {
             this.hashService = hashService;
             this.verificarService = verificarService;
         }
 
-
+        // Intenta iniciar sesión. Devuelve true si todo está bien.
+        // En "mensaje" deja el texto que se le mostrará al usuario.
         public bool IniciarSesion(string correo, string clave, out string mensaje)
         {
             // Validaciones
@@ -54,7 +56,7 @@ namespace Negocio
                 // usuario en la base de datos
                 E_Usuario usuario = datos.ObtenerPorCorreo(correo.Trim());
 
-  
+                // Mismo mensaje si no existe o si la clave está mal
                 if (usuario == null ||
                     !verificarService.Verificar(clave, usuario.Salt, usuario.PasswordHash))
                 {
@@ -62,8 +64,25 @@ namespace Negocio
                     return false;
                 }
 
+                // La contraseña es correcta, pero el admin pudo haber desactivado la cuenta
+                if (!usuario.Activo)
+                {
+                    mensaje = "Tu cuenta está desactivada. Contacta al administrador.";
+                    return false;
+                }
 
+                // Todo bien: guardamos quién inició sesión
                 Sesion.UsuarioActual = usuario;
+
+                // Elegimos la cuenta de MySQL según el rol: admin -> Kanki, los demás -> Ibe
+                if (usuario.EsAdmin)
+                {
+                    Conexion.UsarSuperusuario();
+                }
+                else
+                {
+                    Conexion.UsarMinimo();
+                }
                 mensaje = "Bienvenido, " + usuario.Nombre + ".";
                 return true;
             }
@@ -74,8 +93,31 @@ namespace Negocio
             }
         }
 
-        // Registra un usuario nuevo: genera el salt, genera el hash y lo guarda.
+        // Registro desde la pantalla de login: la cuenta siempre queda como "lector".
         public bool Registrar(string nombre, string correo, string clave, out string mensaje)
+        {
+            return Crear(nombre, correo, clave, Roles.Lector, out mensaje);
+        }
+
+        // Crear un usuario desde la ventana de gestión: solo el admin, y él elige el rol.
+        public bool CrearUsuario(string nombre, string correo, string clave, string rol, out string mensaje)
+        {
+            if (!Sesion.EsAdmin)
+            {
+                mensaje = "Solo el administrador puede crear usuarios.";
+                return false;
+            }
+            if (!Roles.EsValido(rol))
+            {
+                mensaje = "Elige un rol de la lista.";
+                return false;
+            }
+
+            return Crear(nombre, correo, clave, rol, out mensaje);
+        }
+
+        // Valida, genera el salt y el hash y guarda el usuario con el rol indicado.
+        private bool Crear(string nombre, string correo, string clave, string rol, out string mensaje)
         {
             // Validaciones
             if (string.IsNullOrWhiteSpace(nombre))
@@ -96,7 +138,7 @@ namespace Negocio
 
             try
             {
-
+                // No permitimos dos usuarios con el mismo correo
                 if (datos.ObtenerPorCorreo(correo.Trim()) != null)
                 {
                     mensaje = "Ese correo ya está registrado.";
@@ -109,7 +151,16 @@ namespace Negocio
                 usuario.Salt = GenerarSalt();
                 usuario.PasswordHash = hashService.GenerarHash(clave, usuario.Salt);
 
-                datos.Insertar(usuario);
+                usuario.Rol = rol;
+
+                if (rol == Roles.Lector)
+                {
+                    datos.Insertar(usuario);
+                }
+                else
+                {
+                    datos.InsertarConRol(usuario);
+                }
 
                 mensaje = "Usuario registrado correctamente.";
                 return true;
@@ -117,6 +168,102 @@ namespace Negocio
             catch (Exception)
             {
                 mensaje = "No se pudo conectar con la base de datos.";
+                return false;
+            }
+        }
+
+        // Lista los usuarios para la ventana de gestión. Solo el admin puede verlos.
+        // Si algo falla devuelve una lista vacía y deja el motivo en "mensaje".
+        public List<E_Usuario> Listar(out string mensaje)
+        {
+            if (!Sesion.EsAdmin)
+            {
+                mensaje = "Solo el administrador puede gestionar usuarios.";
+                return new List<E_Usuario>();
+            }
+
+            try
+            {
+                mensaje = "";
+                return datos.Listar();
+            }
+            catch (Exception ex)
+            {
+                mensaje = "No se pudieron cargar los usuarios: " + ex.Message;
+                return new List<E_Usuario>();
+            }
+        }
+
+        // Le cambia el rol a un usuario. Solo el admin puede hacerlo.
+        public bool CambiarRol(int id, string rol, out string mensaje)
+        {
+            if (!Sesion.EsAdmin)
+            {
+                mensaje = "Solo el administrador puede cambiar roles.";
+                return false;
+            }
+            if (id <= 0)
+            {
+                mensaje = "Selecciona un usuario de la lista.";
+                return false;
+            }
+            if (!Roles.EsValido(rol))
+            {
+                mensaje = "Elige un rol de la lista.";
+                return false;
+            }
+
+            // El admin no puede cambiarse el rol a sí mismo: así nunca se queda sin acceso
+            if (Sesion.UsuarioActual != null && Sesion.UsuarioActual.Id == id)
+            {
+                mensaje = "No puedes cambiar tu propio rol.";
+                return false;
+            }
+
+            try
+            {
+                datos.CambiarRol(id, rol);
+                mensaje = "Rol actualizado. Se aplicará la próxima vez que ese usuario inicie sesión.";
+                return true;
+            }
+            catch (Exception ex)
+            {
+                mensaje = "No se pudo cambiar el rol: " + ex.Message;
+                return false;
+            }
+        }
+
+        // Activa o desactiva una cuenta. Solo el admin puede hacerlo.
+        // Una cuenta desactivada se conserva en la base, pero ya no puede iniciar sesión.
+        public bool CambiarEstado(int id, bool activo, out string mensaje)
+        {
+            if (!Sesion.EsAdmin)
+            {
+                mensaje = "Solo el administrador puede activar o desactivar cuentas.";
+                return false;
+            }
+            if (id <= 0)
+            {
+                mensaje = "Selecciona un usuario de la lista.";
+                return false;
+            }
+
+            // El admin no puede desactivarse a sí mismo: así nunca se queda fuera
+            if (Sesion.UsuarioActual != null && Sesion.UsuarioActual.Id == id)
+            {
+                mensaje = "No puedes desactivar tu propia cuenta.";
+                return false;
+            }
+
+            try
+            {
+                datos.CambiarEstado(id, activo);
+                mensaje = activo ? "Cuenta activada." : "Cuenta desactivada. Ya no podrá iniciar sesión.";
+                return true;
+            }
+            catch (Exception ex)
+            {
+                mensaje = "No se pudo cambiar el estado: " + ex.Message;
                 return false;
             }
         }

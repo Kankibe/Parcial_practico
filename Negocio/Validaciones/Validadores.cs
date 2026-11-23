@@ -2,7 +2,7 @@
 
 namespace Negocio.Validaciones
 {
-    // Validador para texto (ej. nombre del producto): no vacío y no más largo que la columna.
+    // Validador para texto
     public class ValidadorTexto : IValidadorCampo
     {
         private readonly int maxLongitud;
@@ -34,7 +34,7 @@ namespace Negocio.Validaciones
         }
     }
 
-    // Validador para decimales (ej. precio): número con punto decimal, mayor o igual a 0.
+    // Validador para decimales
     public class ValidadorDecimal : IValidadorCampo
     {
         // Lo máximo que cabe en la columna DECIMAL(10,2)
@@ -67,8 +67,6 @@ namespace Negocio.Validaciones
             return true;
         }
 
-        // Convierte el texto a decimal sin depender del idioma de Windows.
-        // Acepta "15.70" y también "15,70". No acepta negativos.
         public static bool TryParsear(string valor, out decimal resultado)
         {
             resultado = 0;
@@ -85,7 +83,7 @@ namespace Negocio.Validaciones
         }
     }
 
-    // Validador para enteros (ej. cantidad): solo dígitos, mayor o igual a 0.
+    // Validador para enteros 
     public class ValidadorEntero : IValidadorCampo
     {
         public string MensajeError { get; private set; }

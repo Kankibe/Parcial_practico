@@ -662,19 +662,24 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\gonza\\.nuget\\packages\\": {}
+    "C:\\Users\\gonza\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\gonza\\Downloads\\LabMVP\\LabMVP\\Negocio\\Negocio.csproj",
+      "projectUniqueName": "C:\\Users\\gonza\\Downloads\\LabMVP_roles\\LabMVP\\Negocio\\Negocio.csproj",
       "projectName": "Negocio",
-      "projectPath": "C:\\Users\\gonza\\Downloads\\LabMVP\\LabMVP\\Negocio\\Negocio.csproj",
+      "projectPath": "C:\\Users\\gonza\\Downloads\\LabMVP_roles\\LabMVP\\Negocio\\Negocio.csproj",
       "packagesPath": "C:\\Users\\gonza\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\gonza\\Downloads\\LabMVP\\LabMVP\\Negocio\\obj\\",
+      "outputPath": "C:\\Users\\gonza\\Downloads\\LabMVP_roles\\LabMVP\\Negocio\\obj\\",
       "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+      ],
       "configFilePaths": [
         "C:\\Users\\gonza\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -689,11 +694,11 @@
           "framework": "net472",
           "targetAlias": "net472",
           "projectReferences": {
-            "C:\\Users\\gonza\\Downloads\\LabMVP\\LabMVP\\Datos\\Datos.csproj": {
-              "projectPath": "C:\\Users\\gonza\\Downloads\\LabMVP\\LabMVP\\Datos\\Datos.csproj"
+            "C:\\Users\\gonza\\Downloads\\LabMVP_roles\\LabMVP\\Datos\\Datos.csproj": {
+              "projectPath": "C:\\Users\\gonza\\Downloads\\LabMVP_roles\\LabMVP\\Datos\\Datos.csproj"
             },
-            "C:\\Users\\gonza\\Downloads\\LabMVP\\LabMVP\\Entidades\\Entidades.csproj": {
-              "projectPath": "C:\\Users\\gonza\\Downloads\\LabMVP\\LabMVP\\Entidades\\Entidades.csproj"
+            "C:\\Users\\gonza\\Downloads\\LabMVP_roles\\LabMVP\\Entidades\\Entidades.csproj": {
+              "projectPath": "C:\\Users\\gonza\\Downloads\\LabMVP_roles\\LabMVP\\Entidades\\Entidades.csproj"
             }
           }
         }
@@ -708,13 +713,13 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "10.0.400"
+      "SdkAnalysisLevel": "11.0.100"
     },
     "frameworks": {
       "net472": {
         "framework": "net472",
         "targetAlias": "net472",
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.401\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\11.0.100\\RuntimeIdentifierGraph.json"
       }
     }
   }

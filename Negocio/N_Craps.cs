@@ -17,14 +17,13 @@ namespace Negocio
         public bool Gano { get; private set; }
         public string Mensaje { get; private set; }
 
-        // Marcador de la sesión
         public int Ganadas { get; private set; }
         public int Perdidas { get; private set; }
 
-        // Tira los dos dados y aplica las reglas
+
         public void Tirar()
         {
-
+            // Si el juego anterior ya terminó, empezamos uno nuevo
             if (JuegoTerminado)
             {
                 NuevoJuego();
